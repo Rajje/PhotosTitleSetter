@@ -5,9 +5,11 @@
 
 import sqlite3
 import os
+import shutil
+from time import time
 
 LIBRARY_PATH_FROM_LIBROOT = "/Database/apdb/Library.apdb"
-BACKUP_PATH = os.path.expanduser("~/Library/Application Support/copyTitles/")
+BACKUP_PATH = os.path.expanduser("~/Library/Application Support/PhotosTitleSetter/")
 
 def removeExtension(fileName):
 	return os.path.splitext(fileName)[0]
@@ -117,8 +119,6 @@ def copyFromFileNames(newLibConn, verbose):
 			newLibIns.execute("SELECT name, fileName, uuid FROM RKVersion WHERE uuid=?", (info[1],))
 			print(newLibIns.fetchone())
 
-		# 9138 ska andras
-
 		name = removeExtension(info[0])
 		infoToInsert = (name, info[1])
 
@@ -138,6 +138,22 @@ def copyFromFileNames(newLibConn, verbose):
 	print("")
 	print(str(i) + " titles were set in the new library based on the file names.")
 
+def backup(filePath, timeID, description):
+	if not os.path.exists(BACKUP_PATH):
+		os.makedirs(BACKUP_PATH)
+
+	newPath = BACKUP_PATH + str(timeID) + "/"
+	newPath = newPath.replace(".", "-")
+
+	if not os.path.exists(newPath):
+		os.makedirs(newPath) # create a new directory for this backup, with the current time as name
+
+	fileName = os.path.splitext(filePath.split("/")[-1])[0]
+	fileExtension = os.path.splitext(filePath)[1]
+	newPath += fileName + "_" + description + fileExtension
+	shutil.copy2(filePath, newPath)
+	print("A backup of the " + description + " database was created at " + newPath)
+
 
 if __name__ == "__main__":
 	initialInfo = ("This script lets you choose an old iPhoto library and a new Photos library.\n"
@@ -152,13 +168,20 @@ if __name__ == "__main__":
 	)
 
 	if (raw_input(initialInfo) == "y"):
+		# Ask the user for paths to the libraries
 		oldLibPath = askForLibPath("OLD")
 		newLibPath = askForLibPath("NEW")
 
-		# oldLibPath = "libraryWithTitles/Library.apdb"
+		# The above functions can be outcommented and replaced with hard-coded library paths below
+		# oldLibPath = "libraryWithTitles/Library.apdb" 
 		# newLibPath = "libraryWithoutTitles/Library.apdb"
 
-		# oldLibPath, newLibPath = backupFiles([oldLibPath, newLibPath])
+		# try:
+		timeID = time()
+		backup(oldLibPath, timeID, "old")
+		backup(newLibPath, timeID, "new")
+		# except:
+		# 	print("The databases could not be backed up.")
 
 		oldLibConn = getConnection(oldLibPath)
 		newLibConn = getConnection(newLibPath)
