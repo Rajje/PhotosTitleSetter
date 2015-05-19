@@ -4,7 +4,7 @@ Migrates image titles from an iPhoto library to a Photos library. Can set titles
 
 Instructions:
 Make sure to quit both iPhoto and Photos
-Download the PhotosTitleSetter script from: link
+Download the PhotosTitleSetter.py script from: https://github.com/Rajje/PhotosTitleSetter
 Open a new Terminal window
 Type "python " including the space at the end
 Drag the script to the Terminal window and then press the return or enter key
